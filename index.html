@@ -1,0 +1,56 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>LifeBack&trade; — A-V Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="LifeBack&trade; demo UI calling /api/analyze via Vercel rewrites.">
+  <style>
+    body{font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif;background:#f7f9ff;color:#111827;margin:0;padding:24px}
+    .card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px;max-width:900px}
+    .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    button{background:#7c3aed;color:#fff;border:none;border-radius:8px;padding:10px 14px;cursor:pointer;font-weight:600}
+    button.secondary{background:#fff;color:#111827;border:1px solid #cbd5e1}
+    pre{white-space:pre-wrap;background:#f8fafc;border:1px solid #e5e7eb;border-radius:8px;padding:10px}
+  </style>
+</head>
+<body>
+  <h1>LifeBack&trade; — Audio-Video Analysis (Demo)</h1>
+  <div class="card">
+    <p>This page calls <code>/api/analyze</code> and <code>/health</code> (Vercel rewrites to your server).</p>
+    <div class="row">
+      <button id="btnHealth" class="secondary">Ping /health</button>
+      <button id="btnMock">Send mock blob to /api/analyze</button>
+    </div>
+    <div class="row">
+      <form id="up" enctype="multipart/form-data">
+        <input type="file" name="file" accept="video/*,.webm,.mp4,.wav,.png,.txt" required>
+        <button>Upload file to /api/analyze</button>
+      </form>
+    </div>
+    <h3>Response</h3>
+    <pre id="out">—</pre>
+  </div>
+<script>
+const CONFIG = { api: { analyzeUrl: "/api/analyze", healthUrl: "/health" } };
+const out = (t)=> document.getElementById('out').textContent = t;
+
+document.getElementById('btnHealth').onclick = async () => {
+  const r = await fetch(CONFIG.api.healthUrl);
+  out(await r.text());
+};
+document.getElementById('btnMock').onclick = async () => {
+  const dummy = new Blob([new Uint8Array(1024)]);  // 1KB
+  const fd = new FormData(); fd.append('file', dummy, 'mock.webm');
+  const r = await fetch(CONFIG.api.analyzeUrl, { method:'POST', body: fd });
+  out(await r.text());
+};
+document.getElementById('up').onsubmit = async (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const r = await fetch(CONFIG.api.analyzeUrl, { method:'POST', body: fd });
+  out(await r.text());
+};
+</script>
+</body>
+</html>
